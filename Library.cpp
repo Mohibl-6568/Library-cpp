@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <fstream>
 
 using namespace std;
 
@@ -28,8 +29,19 @@ private:
     int bookCounter;
     int studentCounter;
 
+    const string BOOKS_FILE = "books.txt";
+    const string STUDENTS_FILE = "students.txt";
+
 public:
-    Library() : bookCounter(1), studentCounter(1) {}
+    Library() : bookCounter(1), studentCounter(1) {
+        loadBooks();
+        loadStudents();
+    }
+
+    ~Library() {
+        saveBooks();
+        saveStudents();
+    }
 
     // Add a new book
     void addBook(const string& title, const string& author) {
@@ -147,6 +159,74 @@ public:
             }
         }
         return false;
+    }
+
+    // Load books from file
+    void loadBooks() {
+        ifstream file(BOOKS_FILE);
+        if (!file.is_open()) {
+            cout << "No existing books file found. Starting with an empty library.\n";
+            return;
+        }
+
+        Book book;
+        while (file >> book.id >> ws && getline(file, book.title) && getline(file, book.author) >> book.issued >> book.issuedTo) {
+            books.push_back(book);
+            if (book.id >= bookCounter) {
+                bookCounter = book.id + 1;
+            }
+        }
+        file.close();
+    }
+
+    // Save books to file
+    void saveBooks() const {
+        ofstream file(BOOKS_FILE);
+        if (!file.is_open()) {
+            cerr << "Error saving books to file.\n";
+            return;
+        }
+
+        for (const auto& book : books) {
+            file << book.id << "\n"
+                 << book.title << "\n"
+                 << book.author << "\n"
+                 << book.issued << " " << book.issuedTo << "\n";
+        }
+        file.close();
+    }
+
+    // Load students from file
+    void loadStudents() {
+        ifstream file(STUDENTS_FILE);
+        if (!file.is_open()) {
+            cout << "No existing students file found. Starting with an empty student list.\n";
+            return;
+        }
+
+        Student student;
+        while (file >> student.id >> ws && getline(file, student.name)) {
+            students.push_back(student);
+            if (student.id >= studentCounter) {
+                studentCounter = student.id + 1;
+            }
+        }
+        file.close();
+    }
+
+    // Save students to file
+    void saveStudents() const {
+        ofstream file(STUDENTS_FILE);
+        if (!file.is_open()) {
+            cerr << "Error saving students to file.\n";
+            return;
+        }
+
+        for (const auto& student : students) {
+            file << student.id << "\n"
+                 << student.name << "\n";
+        }
+        file.close();
     }
 };
 
